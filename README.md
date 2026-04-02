@@ -112,7 +112,7 @@ design-flow -> blueprint -> featurelist -> spec -> prd -> prototype-generator ->
 
 ## 5. 门禁机制（关键）
 
-- Gate A：需求澄清完备（目标、主流程、异常、关键字段、状态、验收）
+- Gate A：需求澄清完备（深度访谈到共享理解后，目标、主流程、异常、关键字段、状态、验收均已确认）
 - Gate B：Spec 完备（页面、字段、动作、状态、约束）
 - Gate C：Patch 白名单（文案优化/交互微调/字段增删/状态补充）
 
