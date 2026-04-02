@@ -7,7 +7,7 @@
 
 ## 2) Item-by-Item Delivery
 - Do not generate PRDs for all features at once.
-- Work one `feature_id` (or one strongly-coupled small group) per iteration.
+- Work one target item id (`feature_id` or `module_id`) (or one strongly-coupled small group) per iteration.
 
 ## 3) No Technical Design in PRD
 - PRD must not include field keys, database schema, API routes, table names, or service implementation.

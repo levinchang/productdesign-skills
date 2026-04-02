@@ -9,7 +9,7 @@
 
 - 统一处理 `0-1` 新产品设计与 `1-n` 版本迭代
 - 支持“用户指定先做项”与“按优先级推进”双入口
-- 一次只推进一个最小闭环（单个 `feature_id` 或强耦合小组）
+- 一次只推进一个最小闭环（单个 `目标项ID（feature_id 或 module_id）` 或强耦合小组）
 - 建立 `FeatureList -> Spec -> PRD -> Prototype -> Patch` 的稳定追溯链
 - 保证 PRD 面向研发协作，但不包含技术设计细节
 
@@ -18,8 +18,8 @@
 ## 2. 技能清单（6 个）
 
 - `product-design-flow`：入口编排与门禁控制
-- `product-blueprint`：上游背景、场景、能力地图
-- `product-featurelist`：功能拆解 + 轻量计划字段
+- `product-blueprint`：产品定位、市场洞察、场景与边界决策
+- `product-featurelist`：模块级功能清单 + 轻量计划字段
 - `product-spec`：结构化事实源（中间层）
 - `product-prd`：研发协作 PRD 渲染器
 - `prototype-generator`：高保真原型编译器（Next.js 基线）
@@ -41,7 +41,7 @@ design-flow -> blueprint -> featurelist -> spec -> prd -> prototype-generator ->
 
 ## 3.1 场景路由（实战）
 
-### 场景 A：已有 feature_id，要做原型
+### 场景 A：已有目标项ID（feature_id 或 module_id），要做原型
 
 `featurelist -> spec -> prototype-generator -> patch`
 
@@ -53,7 +53,7 @@ design-flow -> blueprint -> featurelist -> spec -> prd -> prototype-generator ->
 
 ### 场景 C：只有截图/想法，要先出 PRD
 
-`prd(独立模式：Draft -> RD) -> (可选) spec -> prototype-generator`
+`prd(独立访谈收敛 -> 正式PRD) -> (可选) spec -> prototype-generator`
 
 说明：该场景可先不走 blueprint/featurelist，但后续要做高保真原型时仍需补 Spec。
 
@@ -72,7 +72,9 @@ design-flow -> blueprint -> featurelist -> spec -> prd -> prototype-generator ->
 ### 4.2 `product-blueprint`
 
 负责：
-- 业务目标、用户角色、关键场景、能力地图
+- 产品定位、价值主张、市场洞察（含竞品扫描）
+- 用户角色、关键场景、能力地图
+- 产品边界、关键约束、风险假设与阶段策略
 - 输出场景 ID / 能力 ID
 - 标注本轮先做项（可选）
 - 标注冻结边界与待确认项
@@ -80,8 +82,9 @@ design-flow -> blueprint -> featurelist -> spec -> prd -> prototype-generator ->
 ### 4.3 `product-featurelist`
 
 负责：
-- Story 级拆解与编号
+- 一级/二级菜单与模块级功能项梳理
 - 维护轻量计划字段：`优先级/状态/依赖/计划迭代/Ready`
+- 允许细项暂缺并在 PRD 收敛后回填
 - 提供“指定先做项”与“按优先级推进”双模式
 
 ### 4.4 `product-spec`
@@ -96,6 +99,7 @@ design-flow -> blueprint -> featurelist -> spec -> prd -> prototype-generator ->
 负责：
 - 从 `spec` 渲染研发协作 PRD
 - 可按模块成篇，但篇内必须按 Story 拆分最小闭环
+- 每篇先产出“模块功能清单（Story级编号）”，再展开正文
 - 强调可测试、可验收、可追溯
 - 严禁技术设计细节（字段键名、数据库、接口路径等）
 
@@ -107,6 +111,7 @@ design-flow -> blueprint -> featurelist -> spec -> prd -> prototype-generator ->
 - 输出可回写标识 `prototype_change_id`
 - 禁止新增 Spec 未定义业务逻辑
 - 内置模板：`prototype-generator/assets/nextjs-template/`
+- Prompt 模板：`prototype-generator/prototype_prompt_template.md`（缺失时使用 skill 内置默认模板）
 
 ---
 
@@ -154,3 +159,15 @@ design-flow -> blueprint -> featurelist -> spec -> prd -> prototype-generator ->
 - 需要高一致性（FeatureList/PRD/原型）协作的团队
 
 若用于 C 端、硬件端或探索型项目，可按需轻量化裁剪。
+
+---
+
+## 9. 方法论参考（原则化）
+
+本仓库采用“方法约束，不固定问卷”策略，可按阶段参考：
+
+- `blueprint`：Double Diamond / JTBD / OST
+- `featurelist`：Story Mapping / RICE(或WSJF) / INVEST
+- `prd`：Event Storming / FMEA / BDD 验收表达
+
+目标是提升访谈深度与决策质量，而不是强制套用统一问题清单。

@@ -6,7 +6,7 @@
 
 ## 0. 输入前提
 
-- 输入必须来自同一版本的 Spec：`feature_id + spec_version`
+- 输入必须来自同一版本的 Spec：`目标项ID（feature_id 或 module_id） + spec_version`
 - 若缺少以下任一项，禁止生成原型：
   - 页面清单
   - 字段清单
@@ -101,4 +101,3 @@ needs_prd_patch: yes/no
   - 业务目标
   - 核心流程闭环
   - 验收标准
-

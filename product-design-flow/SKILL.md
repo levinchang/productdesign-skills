@@ -1,6 +1,6 @@
 ---
 name: product-design-flow
-description: "统一编排产品设计流程：blueprint -> featurelist -> spec -> prd -> prototype-generator -> patch。支持“用户指定先做项”与“按优先级推进”双入口，一次只推进一个最小闭环。"
+description: "统一编排产品设计流程：blueprint -> featurelist -> spec -> prd -> prototype-generator -> patch。支持“用户指定先做项”与“按优先级推进”双入口，一次只推进一个最小闭环并保持分层一致。"
 ---
 
 # 产品设计一体化流程（Product Design Flow）
@@ -21,7 +21,7 @@ description: "统一编排产品设计流程：blueprint -> featurelist -> spec 
 
 - **mode（必需）**：`0-1` 或 `1-n`
 - **目标范围**：版本目标、模块、场景
-- **先做项（可选）**：`feature_id` 或模块名
+- **先做项（可选）**：`目标项ID（feature_id 或 module_id）` 或模块名
 - **已有材料（可选）**：蓝图、Feature List、旧 PRD、旧原型
 
 执行入口规则：
@@ -34,33 +34,37 @@ description: "统一编排产品设计流程：blueprint -> featurelist -> spec 
 
 根据用户输入类型自动路由到合适流程：
 
-1. **场景 A：已有 feature_id，直接做原型或迭代**
+1. **场景 A：已有目标项ID（feature_id 或 module_id），直接做原型或迭代**
    - 路由：`featurelist -> spec -> prd -> prototype-generator`
 2. **场景 B：已有 PRD，要生成原型**
    - 路由：`prd(校正) -> prd-to-spec(编译) -> prototype-generator`
    - 规则：禁止 PRD 直接生成高保真原型，必须先转 Spec。
 3. **场景 C：只有截图/想法，要先出 PRD**
-   - 路由：`prd(独立模式：Draft -> RD) -> (可选) spec -> prototype-generator`
+   - 路由：`prd(独立访谈收敛 -> 正式PRD) -> (可选) spec -> prototype-generator`
    - 说明：此场景可跳过 blueprint/featurelist，但后续要做原型时仍需补 Spec。
 
 ---
 
 ## 核心流程（一次只做一个 item）
 
+前置硬规则：
+- PRD 按一级/二级功能逐篇撰写；
+- 禁止一次性全量生成 Feature List 全部功能对应的 PRD。
+
 1. **读取或初始化项目标准文档**
    - 优先读取 `product-doc-standard/README.md`；
    - 无则按默认路径初始化文档结构。
 
 2. **更新上游（按需）**
-   - 需要时调用 `product-blueprint` 更新场景/目标；
-   - 调用 `product-featurelist` 更新条目与状态字段。
+   - 需要时调用 `product-blueprint` 先收敛：产品定位、市场洞察（含竞品扫描）、核心场景、边界与约束；
+   - 调用 `product-featurelist` 更新模块级条目与状态字段（一级/二级菜单、优先级、依赖、Ready）。
 
 3. **确定本轮 item**
-   - 锁定一个 `feature_id`（或一小组强耦合编号）。
+   - 锁定一个 `目标项ID（feature_id 或 module_id）`（或一小组强耦合编号）。
 
 4. **最小需求澄清（门禁 A）**
    - 调用 `product-prd` 的深度访谈机制先形成共享理解；
-   - 补齐：目标用户、主流程、异常流程、关键字段、状态、验收口径、非范围；
+   - 补齐：模块功能清单（Story级编号）、目标用户、主流程、异常流程、关键规则、状态、验收口径、非范围；
    - 缺任一关键项则输出待确认项并暂停，不生成 PRD/原型。
 
 5. **生成/更新 Spec（门禁 B）**
@@ -73,7 +77,7 @@ description: "统一编排产品设计流程：blueprint -> featurelist -> spec 
 
 7. **从 Spec 生成原型**
    - 调用 `prototype-generator` 生成高保真原型（Next.js 基线）；
-   - 使用 `prototype_prompt_template.md` 编译提示词；
+   - 使用 `../prototype-generator/prototype_prompt_template.md` 编译提示词；
    - 仅在锁定范围内生成，冲突输出冲突清单并停止。
 
    **硬规则：没有 Spec，不生成高保真原型。**

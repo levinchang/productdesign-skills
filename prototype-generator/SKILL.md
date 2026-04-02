@@ -21,12 +21,45 @@ description: "基于 product-spec 生成高保真前端原型（Next.js App Rout
 仓库内已提供可运行模板：
 
 - `prototype-generator/assets/nextjs-template/`
+- `prototype-generator/prototype_prompt_template.md`（Spec -> 原型提示词模板）
 
 使用规则：
 
 1. 先复制模板到项目原型目录；
 2. 再根据 Spec 填充页面与交互；
 3. 不要跳过模板直接从零生成。
+
+### Prompt 模板兜底规则（必须）
+
+- 优先读取：`prototype-generator/prototype_prompt_template.md`。
+- 若该文件不存在或不可读取，则直接使用以下内置默认模板继续执行，不得中断：
+
+```text
+请基于同一版本 Spec 生成原型，不得新增 Spec 未定义页面/字段/流程。
+
+输入：
+- 目标项ID：{feature_id_or_module_id}
+- spec_version：{spec_version}
+- page_scope：{page_scope}
+- locked_fields：{locked_fields}
+- locked_flows：{locked_flows}
+- locked_pages：{locked_pages}
+- locked_acceptance：{locked_acceptance}
+
+输出必须包含：
+1) 页面骨架：主操作区/筛选区/列表区/详情区与页面跳转关系
+2) 交互规则：按钮生命周期、表单校验、列表规则、删除确认
+3) 状态边界：默认/加载中/空态/失败态/无权限
+4) 变更记录：
+   - prototype_change_id
+   - scope
+   - changes
+   - blocked
+   - needs_prd_patch
+
+冲突处理：
+- 若发现 Spec 与目标输出冲突，输出冲突清单并停止，不得自行发明业务逻辑。
+```
 
 ---
 
