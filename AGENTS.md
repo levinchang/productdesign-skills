@@ -3,6 +3,7 @@
 ## 1) Single Source of Truth
 - `product-spec` is the canonical source.
 - PRD and prototype must both be derived from spec.
+- No high-fidelity prototype generation without spec.
 
 ## 2) Item-by-Item Delivery
 - Do not generate PRDs for all features at once.

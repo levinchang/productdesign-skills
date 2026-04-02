@@ -1,275 +1,156 @@
 # Product Design Skills README
 
-这是 **Levin 的产品设计 / PRD skill 体系**。它的核心目标不是只生成“给人看”的产品文档，而是尽量打通从产品设计到 AI Coding 消费之间的链路，让产品文档可以进一步沉淀为 **AI 可读、可复用、可直接调用的 PRD Prompt**。
-
-这套 skill 整体约定了：
-
-- 产品设计阶段的文档分层与编排顺序
-- Feature List 与 PRD 的编号和追溯规则
-- PRD 的书写规范与结构约束
-- 原型生成与落盘方式
-- 本地项目中的文档目录结构与更新方式
-
-因此，它尤其适合：
-
-- 从 `0-1` 启动的新产品 / 新项目
-- 希望让 AI Coding 能直接消费 PRD Prompt 的团队
-- 希望在本地项目中建立稳定产品文档资产的场景
-
-本 README 面向以下 4 个产品设计相关 skill：
-
-- `product-design-flow`
-- `product-blueprint`
-- `product-featurelist`
-- `product-prd`
-
-这 4 个 skill 共同组成一条从产品规划到需求落盘的标准链路：
-
-`design-flow -> blueprint -> featurelist -> prd`
-
-目标不是生成一堆彼此孤立的文档，而是让产品蓝图、功能清单与 PRD 之间形成稳定的上游到下游追溯关系，便于产品、设计、研发、测试在同一套语义下协作。
+这是 Levin 的产品设计 / PRD skill 体系。  
+当前版本的核心目标是：让产品文档从“文档驱动”升级为“工件驱动”，以 `Spec` 作为 PRD 与原型的共同事实源，降低幻觉与返工。
 
 ---
 
 ## 1. 设计目标
 
-这套 skill 的设计目标是：
-
-- 用统一方法处理 `0-1` 新产品设计与 `1-n` 版本迭代
-- 在本地可写环境中自动读取或初始化文档结构
-- 让蓝图、Feature List、PRD 三层文档之间保持可追溯
-- 降低 PM 在文档编排、编号维护、目录管理上的重复劳动
-- 提高 AI 在产品文档生成过程中的一致性与可维护性
+- 统一处理 `0-1` 新产品设计与 `1-n` 版本迭代
+- 支持“用户指定先做项”与“按优先级推进”双入口
+- 一次只推进一个最小闭环（单个 `feature_id` 或强耦合小组）
+- 建立 `FeatureList -> Spec -> PRD -> Prototype -> Patch` 的稳定追溯链
+- 保证 PRD 面向研发协作，但不包含技术设计细节
 
 ---
 
-## 2. 四个 Skill 的角色分工
+## 2. 技能清单（6 个）
 
-### 2.1 `product-design-flow`
-
-入口编排 skill。
-
-职责：
-
-- 识别用户当前是 `0-1` 还是 `1-n`
-- 读取项目中的文档结构规范
-- 决定本次需要调用哪些下游 skill
-- 统一汇总本次生成或更新的文档结果
-
-适合场景：
-
-- 希望一句话描述版本目标，然后由 AI 自动串联蓝图、Feature List 与 PRD
-- 希望在同一入口下完成整轮产品文档设计工作
+- `product-design-flow`：入口编排与门禁控制
+- `product-blueprint`：上游背景、场景、能力地图
+- `product-featurelist`：功能拆解 + 轻量计划字段
+- `product-spec`：结构化事实源（中间层）
+- `product-prd`：研发协作 PRD 渲染器
+- `prototype-generator`：高保真原型编译器（Next.js 基线）
 
 ---
 
-### 2.2 `product-blueprint`
+## 3. 标准链路
 
-负责上游业务蓝图。
+```text
+design-flow -> blueprint -> featurelist -> spec -> prd -> prototype-generator -> patch
+```
 
-职责：
-
-- 梳理需求背景、业务目标、用户角色
-- 明确关键场景与范围边界
-- 输出能力地图
-- 为下游 Feature List 与 PRD 提供场景 ID、能力 ID 等追溯来源
-
-适合场景：
-
-- 新产品立项
-- 版本规划前需要先澄清范围与价值
-- 需要统一“为什么做、给谁做、在哪些场景做”
+说明：
+- `spec` 是单一事实源。
+- `prd` 和 `prototype-generator` 产物都应从 `spec` 派生。
+- 原型确认后必须先回写 `spec`，再回写 `prd`。
 
 ---
 
-### 2.3 `product-featurelist`
+## 3.1 场景路由（实战）
 
-负责中间层功能清单。
+### 场景 A：已有 feature_id，要做原型
 
-职责：
+`featurelist -> spec -> prototype-generator -> patch`
 
-- 按统一表头拆解功能清单
-- 为每个功能生成稳定编号
-- 明确领域、模块、页面、功能点和可选子功能
-- 作为 PRD 编写与排期的直接输入
+### 场景 B：已有 PRD，要做原型
 
-当前推荐表头核心思路：
+`prd(校正) -> prd-to-spec(编译) -> prototype-generator -> patch`
 
-- `领域（Domain）`
-- `一级（菜单/模块）`
-- `二级（菜单/页面）`
-- `功能（页内能力）`
-- `子功能（可选）`
-- `涉及端`
+规则：PRD 不能直接生成高保真原型，必须先转 Spec。
 
-设计原则：
+### 场景 C：只有截图/想法，要先出 PRD
 
-- 一行 = 一个可单独评审与排期的 Story
-- 编号承担主归属端信息
-- `涉及端` 表达实际受影响端，不再单独保留 `端（Client）`
+`prd(独立模式：Draft -> RD) -> (可选) spec -> prototype-generator`
+
+说明：该场景可先不走 blueprint/featurelist，但后续要做高保真原型时仍需补 Spec。
 
 ---
 
-### 2.4 `product-prd`
+## 4. 各 Skill 职责
 
-负责下游 PRD。
+### 4.1 `product-design-flow`
 
-职责：
+负责：
+- 识别 `0-1/1-n` 场景
+- 锁定本轮 item（用户指定优先；否则按 Ready+优先级）
+- 执行门禁 A/B/C
+- 串联下游 skill 并输出本轮结果
 
-- 承接 Feature List 编号逐篇生成或更新 PRD
-- 明确页面结构、交互逻辑、字段规格、边界规则
-- 在复杂流程下按需补充 Mermaid 或 PlantUML 图
-- 保持 PRD 与 Feature List、蓝图之间可追溯
+### 4.2 `product-blueprint`
 
-设计原则：
+负责：
+- 业务目标、用户角色、关键场景、能力地图
+- 输出场景 ID / 能力 ID
+- 标注本轮先做项（可选）
+- 标注冻结边界与待确认项
 
-- 默认一条 Feature 对应一篇 PRD
-- 仅允许极少数强耦合小组 Feature 合并成一篇 PRD
-- 文档以产品经理视角描述业务和交互，不展开技术实现
+### 4.3 `product-featurelist`
 
----
+负责：
+- Story 级拆解与编号
+- 维护轻量计划字段：`优先级/状态/依赖/计划迭代/Ready`
+- 提供“指定先做项”与“按优先级推进”双模式
 
-## 3. 推荐使用顺序
+### 4.4 `product-spec`
 
-标准顺序如下：
+负责：
+- 生成结构化页面与交互规范
+- 约束列表/新建/详情/删除等关键页面规则
+- 承担 PRD 与原型的共同事实源
 
-1. `product-design-flow`
-2. `product-blueprint`
-3. `product-featurelist`
-4. `product-prd`
+### 4.5 `product-prd`
 
-对应关系：
+负责：
+- 从 `spec` 渲染研发协作 PRD
+- 可按模块成篇，但篇内必须按 Story 拆分最小闭环
+- 强调可测试、可验收、可追溯
+- 严禁技术设计细节（字段键名、数据库、接口路径等）
 
-- `design-flow` 决定本轮要做什么
-- `blueprint` 说明为什么做、解决什么问题
-- `featurelist` 说明拆成哪些可排期功能
-- `prd` 说明每个功能具体怎么做
+### 4.6 `prototype-generator`
 
-如果只做局部工作，也可以单独调用：
-
-- 只需要梳理背景与场景：用 `product-blueprint`
-- 只需要出功能清单：用 `product-featurelist`
-- 已有 Feature List，只需要补 PRD：用 `product-prd`
-
----
-
-## 4. 典型产出链路
-
-### 4.1 0-1 新产品
-
-常见产出顺序：
-
-1. 生成 `01_blueprint.md`
-2. 生成 `02_feature_list.md`
-3. 按 Feature 编号逐步生成 `03_prd/...`
-
-适合：
-
-- 新平台
-- 新子系统
-- 新业务域
+负责：
+- 从 `spec` 生成高保真原型（Next.js App Router + TypeScript + Tailwind + shadcn/ui）
+- 覆盖关键页面与关键状态（默认/加载中/空态/失败态）
+- 输出可回写标识 `prototype_change_id`
+- 禁止新增 Spec 未定义业务逻辑
+- 内置模板：`prototype-generator/assets/nextjs-template/`
 
 ---
 
-### 4.2 1-n 版本迭代
+## 5. 门禁机制（关键）
 
-常见产出顺序：
+- Gate A：需求澄清完备（目标、主流程、异常、关键字段、状态、验收）
+- Gate B：Spec 完备（页面、字段、动作、状态、约束）
+- Gate C：Patch 白名单（文案优化/交互微调/字段增删/状态补充）
 
-1. 更新蓝图中的版本目标与影响范围
-2. 增量更新 Feature List
-3. 更新受影响 Feature 对应的 PRD
-
-适合：
-
-- 模块增强
-- 流程优化
-- 新页面补充
-- 旧规则重构
+任一门禁不通过，不进入下一阶段。
 
 ---
 
-## 5. 文档追溯关系
+## 6. PRD 协作原则
 
-推荐遵循以下追溯链：
-
-- 蓝图中维护 `场景 ID / 能力 ID`
-- Feature List 中维护 `功能编号`，并在说明中引用必要的 `SCN/CAP`
-- PRD Header 中引用：
-  - `对应 FeatureList 编号`
-  - `对应蓝图场景 ID（SCN-xx）`
-  - `对应能力 ID（CAP-xx）`
-
-这样可以保证：
-
-- 从蓝图能追到 Feature
-- 从 Feature 能追到 PRD
-- 从 PRD 能反查上游业务背景和能力来源
+- PRD 面向研发协作，核心是业务逻辑与交互规则
+- 可按模块生成单篇 PRD，但必须 Story 化拆分
+- 每个 Story 必须可测试、可验收、可形成最小闭环
+- 关键页面至少写清：
+  - 列表：按钮、操作、筛选、字段、排序、冻结列
+  - 新建：字段说明、交互形式、校验
+  - 详情：标题栏、按钮、查看态/操作态
+  - 删除：删除限制、关联阻断、二次确认弹窗
 
 ---
 
-## 6. 使用建议
+## 7. 目录建议
 
-### 6.1 何时优先用整套链路
-
-适合：
-
-- 新产品或新模块从无到有
-- 版本范围较大，影响多个模块
-- 希望形成完整文档资产
-
-### 6.2 何时只用局部 skill
-
-适合：
-
-- 已有蓝图，只补功能清单
-- 已有 Feature List，只写某几个 PRD
-- 对已有文档做局部修订
-
-### 6.3 编写习惯建议
-
-- 蓝图不要写成 PRD
-- Feature List 不要写成模块目录树
-- PRD 不要写成技术设计文档
-- 编号一旦进入协作阶段，尽量不要频繁重排
-
----
-
-## 7. 文件与目录建议
-
-具体路径以项目内 `product-doc-standard/README.md` 为准。
-
-若项目尚未约定，通常建议使用：
+具体路径以项目内 `product-doc-standard/README.md` 为准。  
+未约定时可参考：
 
 - `docs/01_blueprint.md`
 - `docs/02_feature_list.md`
+- `docs/03_spec/`
 - `docs/03_prd/`
-
-并在 PRD 目录内维护必要的索引 README 或映射表。
-
----
-
-## 8. 来源说明
-
-本套 skill 为本地化重构与扩展版本，部分设计思路、文档结构启发与写法参考，借鉴自：
-
-- [Kira-product-monster-skills](https://github.com/Kira2red/Kira-product-monster-skills)
-
-在此基础上，当前版本做了以下方向上的本地化调整：
-
-- 强化了本地落盘行为
-- 强化了蓝图 -> Feature List -> PRD 的追溯链
-- 调整了 Feature List 表头与编号策略
-- 调整了 PRD 的拆分粒度与图表策略
-- 更适配 Cursor / Codex 本地协作场景
+- `docs/04_prototype/`
 
 ---
 
-## 9. 当前适用范围
+## 8. 适用范围
 
-这套 skill 目前更适合：
-
+更适合：
 - Web / B 端后台产品
 - 中后台业务平台
-- 需要较强文档追溯和版本规划的产品团队
+- 需要高一致性（FeatureList/PRD/原型）协作的团队
 
-若用于 C 端、硬件端、纯原型探索型项目，也可以使用，但建议根据项目风格再做轻量化裁剪。
+若用于 C 端、硬件端或探索型项目，可按需轻量化裁剪。
